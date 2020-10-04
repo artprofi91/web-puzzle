@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Store } from '@ngrx/store';
 import {
   addToReadingList,
@@ -9,18 +9,22 @@ import {
 } from '@tmo/books/data-access';
 import { FormBuilder } from '@angular/forms';
 import { Book } from '@tmo/shared/models';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
   selector: 'tmo-book-search',
   templateUrl: './book-search.component.html',
   styleUrls: ['./book-search.component.scss']
 })
-export class BookSearchComponent implements OnInit {
+export class BookSearchComponent implements OnInit, OnDestroy {
   books: ReadingListBook[];
 
   searchForm = this.fb.group({
     term: ''
   });
+
+  ngDestroyed$ = new Subject();
 
   constructor(
     private readonly store: Store,
@@ -32,9 +36,26 @@ export class BookSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.select(getAllBooks).subscribe((books) => {
-      this.books = books;
-    });
+    this.getBooks();
+    this.instantSearch();
+  }
+
+  getBooks(): void {
+    this.store
+      .select(getAllBooks)
+      .pipe(takeUntil(this.ngDestroyed$))
+      .subscribe((books) => {
+        this.books = books;
+      });
+  }
+
+  instantSearch(): void {
+    this.searchForm.controls.term.valueChanges
+      .pipe(debounceTime(500), distinctUntilChanged())
+      .pipe(takeUntil(this.ngDestroyed$))
+      .subscribe((res: any) => {
+        this.searchBooks();
+      });
   }
 
   formatDate(date: void | string) {
@@ -56,5 +77,9 @@ export class BookSearchComponent implements OnInit {
     this.searchForm.value.term
       ? this.store.dispatch(searchBooks({ term: this.searchTerm }))
       : this.store.dispatch(clearSearch());
+  }
+
+  ngOnDestroy(): void {
+    this.ngDestroyed$.next();
   }
 }
