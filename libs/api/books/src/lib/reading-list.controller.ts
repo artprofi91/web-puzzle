@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put
+} from '@nestjs/common';
 import { Book } from '@tmo/shared/models';
 import { ReadingListService } from './reading-list.service';
 
@@ -14,6 +22,14 @@ export class ReadingListController {
   @Post('/reading-list/')
   async addToReadingList(@Body() item: Book) {
     return await this.readingList.addBook(item);
+  }
+
+  @Put('/reading-list/:id/finished/')
+  async updateReadingListFinished(
+    @Param() params: { id: string },
+    @Body() body: { finishedDate: string }
+  ) {
+    return await this.readingList.finishBook(params.id, body.finishedDate);
   }
 
   @Delete('/reading-list/:id')
