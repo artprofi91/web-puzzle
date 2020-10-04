@@ -32,7 +32,7 @@ export class BookSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.store.select(getAllBooks).subscribe(books => {
+    this.store.select(getAllBooks).subscribe((books) => {
       this.books = books;
     });
   }
@@ -53,10 +53,8 @@ export class BookSearchComponent implements OnInit {
   }
 
   searchBooks() {
-    if (this.searchForm.value.term) {
-      this.store.dispatch(searchBooks({ term: this.searchTerm }));
-    } else {
-      this.store.dispatch(clearSearch());
-    }
+    this.searchForm.value.term
+      ? this.store.dispatch(searchBooks({ term: this.searchTerm }))
+      : this.store.dispatch(clearSearch());
   }
 }
