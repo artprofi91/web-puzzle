@@ -39,7 +39,7 @@ describe('ReadingList Selectors', () => {
       const results = ToReadSelectors.getReadingList(state);
 
       expect(results.length).toBe(3);
-      expect(results.map(x => x.bookId)).toEqual(['A', 'B', 'C']);
+      expect(results.map((x) => x.bookId)).toEqual(['A', 'B', 'C']);
     });
 
     it("getTotalUnread() should return the current 'loaded' status", () => {
